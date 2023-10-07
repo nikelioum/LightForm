@@ -1,0 +1,53 @@
+/* Flexbox container for the form */
+.custom-contact-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px; /* Adjust as needed for your design */
+    margin: 0 auto; /* Center the form horizontally */
+}
+
+/* Style individual form fields */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+textarea {
+    resize: vertical; /* Allow vertical resizing of the textarea */
+}
+
+input[type="submit"] {
+    background-color: #0073e6;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .custom-contact-form {
+        max-width: 100%; /* Full width on smaller screens */
+        padding: 20px; /* Add some padding for spacing */
+    }
+}
+
+
+
+.pagination {
+    font-size: 18px;
+    margin-top: 15px;
+}
