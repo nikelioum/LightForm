@@ -323,6 +323,11 @@ function custom_contact_form_settings_page() {
             echo '</label>';
             submit_button();
             echo '</form>';
+            // Add the button for blocking IPs in Wordfence
+            echo '<form method="post" action="">';
+            echo '<input type="hidden" name="custom_contact_form_block_ips" value="1">';
+            submit_button('Block IPs in Wordfence', 'primary', 'block_ips_button');
+            echo '</form>';
         } else {
             // Wordfence is not active, display a message or handle it as needed
             echo '<p>Wordfence is not installed or active. Wordfence integration is unavailable.</p>';
@@ -345,6 +350,55 @@ function custom_contact_form_settings_page() {
     </div>
     <?php
 }
+
+
+
+add_action('admin_init', 'custom_contact_form_handle_block_ips');
+
+function custom_contact_form_handle_block_ips() {
+    if (isset($_POST['custom_contact_form_block_ips']) && $_POST['custom_contact_form_block_ips'] == '1') {
+        global $wpdb;
+        
+        // Name of your spam logs table
+        $spam_logs_table_name = $wpdb->prefix . 'custom_contact_form_spam_reports';
+        
+        // Fetch distinct IP addresses from your spam logs
+        $ip_addresses = $wpdb->get_col("SELECT DISTINCT ip_address FROM $spam_logs_table_name");
+        
+        // Name of the Wordfence blocking table
+        $wordfence_table_name = $wpdb->prefix . 'wp_wfBlocks7';
+        
+        // Define the reason and blockedTime
+        $reason = 'lightform spam blocked';
+        $blockedTime = 1;
+        
+        foreach ($ip_addresses as $ip_address) {
+            // Check if the IP address is not already in the Wordfence blocking table
+            $existing_ip = $wpdb->get_var($wpdb->prepare("SELECT ip FROM $wordfence_table_name WHERE ip = %s", $ip_address));
+        
+            if (empty($existing_ip)) {
+                // Insert the IP address into the Wordfence blocking table
+                $wpdb->insert(
+                    $wordfence_table_name,
+                    array(
+                        'type' => 1,              // Type for spam block
+                        'ip' => $ip_address,      // IP address to block
+                        'reason' => $reason,
+                        'blockedTime' => $blockedTime        // Blocked time (you can adjust this as needed)
+                    ),
+                    array('%d', '%s', '%s', '%d')
+                );
+            }
+        }
+        
+        // Redirect back to the settings page after blocking IPs
+        $redirect_url = admin_url('admin.php?page=smtp-settings');
+        wp_redirect($redirect_url);
+        exit;
+    }
+}
+
+
 
 // Function to display the spam reports page
 function custom_contact_form_spam_reports_page() {
